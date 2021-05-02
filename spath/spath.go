@@ -13,10 +13,10 @@ type PathElement struct {
 }
 type PathElements []PathElement
 
-func (pe PathElements) Map(trans func (*PathElement) string) []string {
+func (pe PathElements) Map(trans func (int, *PathElement) string) []string {
 	res := make([]string, len(pe))
 	for i, v := range pe {
-		res[i] = trans(&v)
+		res[i] = trans(i, &v)
 	}
 	return res
 }
