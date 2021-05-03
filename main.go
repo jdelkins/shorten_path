@@ -11,7 +11,7 @@ import (
 )
 
 // TODO: also consider the length of lead-in and lead-out strings
-func partialLength(pe spath.PathElements, use []bool) int {
+func pathLength(pe spath.PathElements, use []bool) int {
 	res := 0
 	for i := 0; i < len(pe); i++ {
 		pe_len := len(pe[i].OrigElement)
@@ -32,6 +32,9 @@ func main() {
 	leadIn := getopt.StringLong("lead-in", 'i', "", "character sequence to begin abbreviated elements")
 	leadOut := getopt.StringLong("lead-out", 'o', "", "character sequence to end abbreviated elements")
 	length := getopt.IntLong("length", 'l', 1, "length of path above which shortening will be attempted")
+	minSavings := getopt.IntLong("minimum-element-savings", 'm', 1, "don't abbreviate a path element " +
+								 "unless doing so will result in at least this many charcaters saved; " +
+								 "use to compensate for printable lead-in or lead-out strings, if any")
 	getopt.Parse()
 
 	if *helpFlag {
@@ -47,13 +50,13 @@ func main() {
 	short := spath.Shorten(spath.Homealize(spath.Components(path.Clean(pth))))
 	use := make([]bool, len(short))
 	for i := 1; i < len(short)-1; i++ {
-		if partialLength(short, use) > *length {
+		if pathLength(short, use) > *length && short[i].Shortened && len(short[i].OrigElement) - len(short[i].ShortElement) >= *minSavings {
 			use[i] = true
 		}
 	}
 
 	formatter := func(i int, pe *spath.PathElement) string {
-		if pe.Shortened && use[i] {
+		if use[i] {
 			return *leadIn + pe.ShortElement + *leadOut
 		}
 		return pe.OrigElement
