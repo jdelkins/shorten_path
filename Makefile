@@ -5,7 +5,7 @@ BINARIES := $(patsubst %,$(BASENAME)_%,$(subst /,_,$(TARGS)))
 
 all: $(BINARIES)
 
-$(BINARIES): main.go
+$(BINARIES): *.go */*.go
 	gox -osarch="$(TARGS)" -ldflags="$(LDFLAGS)"
 	upx $(BASENAME)_linux_amd64
 
