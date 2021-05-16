@@ -1,28 +1,15 @@
 TARG := shorten_path
 LDFLAGS := "-s -w"
+TARGS := linux/amd64 linux/arm freebsd/amd64 openbsd/amd64 netbsd/amd64 darwin/amd64
+BINARIES := $(patsubst %,$(TARG)_%,$(subst /,_,$(TARGS)))
 
-all: \
-	$(TARG).linux-arm \
-	$(TARG).linux-amd64 \
-	$(TARG).freebsd-amd64 \
-	$(TARG).openbsd-amd64 \
-	$(TARG).netbsd-amd64 \
-	$(TARG).darwin-amd64
+all: $(BINARIES)
+
+$(BINARIES): main.go
+	gox -osarch="$(TARGS)" -ldflags=$(LDFLAGS)
+	upx $(TARG)_linux_amd64
 
 clean:
-	rm -f $(TARG) $(TARG).*-*
-
-$(TARG).linux-amd64: /dev/null
-	go build -ldflags $(LDFLAGS)
-	mv $(TARG) $@
-	upx $@
-
-$(TARG).linux-%: /dev/null
-	GOOS=linux GOARCH=$(patsubst $(TARG).linux-%,%,$@) GOARM=7 go build -ldflags $(LDFLAGS)
-	mv $(TARG) $@
-
-$(TARG).%-amd64: /dev/null
-	GOOS=$(patsubst $(TARG).%-amd64,%,$@) GOARCH=amd64 go build -ldflags $(LDFLAGS)
-	mv $(TARG) $@
+	rm -f $(BINARIES)
 
 .PHONY: all clean
