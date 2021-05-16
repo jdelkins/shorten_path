@@ -1,13 +1,13 @@
-TARG := shorten_path
-LDFLAGS := "-s -w"
+BASENAME := shorten_path
+LDFLAGS := -s -w
 TARGS := linux/amd64 linux/arm freebsd/amd64 openbsd/amd64 netbsd/amd64 darwin/amd64
-BINARIES := $(patsubst %,$(TARG)_%,$(subst /,_,$(TARGS)))
+BINARIES := $(patsubst %,$(BASENAME)_%,$(subst /,_,$(TARGS)))
 
 all: $(BINARIES)
 
 $(BINARIES): main.go
-	gox -osarch="$(TARGS)" -ldflags=$(LDFLAGS)
-	upx $(TARG)_linux_amd64
+	gox -osarch="$(TARGS)" -ldflags="$(LDFLAGS)"
+	upx $(BASENAME)_linux_amd64
 
 clean:
 	rm -f $(BINARIES)
