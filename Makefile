@@ -7,7 +7,8 @@ all: $(BINARIES)
 
 $(BINARIES): *.go */*.go
 	gox -osarch="$(TARGS)" -ldflags="$(LDFLAGS)"
-	upx $(BASENAME)_linux_amd64
+	@command -v upxxxx >/dev/null || echo "WARNING: upx not found -- not compressing the binaries"
+	@upx -qq $(BASENAME)_* || true
 
 clean:
 	rm -f $(BINARIES)
