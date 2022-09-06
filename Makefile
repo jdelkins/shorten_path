@@ -1,6 +1,6 @@
 BASENAME := shorten_path
 LDFLAGS := -s -w
-TARGS := linux/amd64 linux/arm freebsd/amd64 openbsd/amd64 netbsd/amd64 darwin/amd64
+TARGS := linux/amd64 linux/arm linux/arm64 freebsd/amd64 openbsd/amd64 netbsd/amd64 darwin/amd64
 BINARIES := $(patsubst %,$(BASENAME)_%,$(subst /,_,$(TARGS)))
 
 all: $(BINARIES)
