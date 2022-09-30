@@ -7,13 +7,13 @@ import (
 )
 
 type PathElement struct {
-	OrigElement string
+	OrigElement  string
 	ShortElement string
-	Shortened bool
+	Shortened    bool
 }
 type PathElements []PathElement
 
-func (pe PathElements) Map(trans func (int, *PathElement) string) []string {
+func (pe PathElements) Map(trans func(int, *PathElement) string) []string {
 	res := make([]string, len(pe))
 	for i, v := range pe {
 		res[i] = trans(i, &v)
@@ -31,7 +31,7 @@ func Homealize(p []string) []string {
 	if len(p) < len(hc) {
 		return p
 	}
-	for i, v := range(hc) {
+	for i, v := range hc {
 		if p[i] != v {
 			return p
 		}
@@ -54,23 +54,25 @@ func Dehomealize(p []string) []string {
 
 func reverse(l []string) {
 	for i, j := 0, len(l)-1; i < j; i, j = i+1, j-1 {
-        l[i], l[j] = l[j], l[i]
-    }
+		l[i], l[j] = l[j], l[i]
+	}
 }
 
 func Components(p string) []string {
 	res := []string{}
-	if p == "" || p == "." {
+	if p == "" || p == "." || p == "/" {
 		return []string{p}
 	}
 	dir, file := p, ""
-	for dir != "." && dir != "" && !(dir == "/" && file == "") {
+	for dir != "." && dir != "" && dir != "/" {
 		dir, file = path.Split(dir)
-		res = append(res, file)
 		dir = path.Clean(dir)
+		if dir != "/" {
+			res = append(res, file)
+		}
 	}
-	if dir == "/" && file == "" {
-		res = append(res, dir)
+	if dir == "/" && file != "" {
+		res = append(res, path.Join(dir, file))
 	}
 	reverse(res)
 	return res
@@ -101,7 +103,7 @@ func Shorten(p []string) PathElements {
 	res := make(PathElements, len(p))
 	res[0] = PathElement{p[0], p[0], false}
 	for i, v := range p {
-		if i == 0 || i == len(p) - 1 {
+		if i == 0 || i == len(p)-1 {
 			continue
 		}
 		found_abbrev := false
