@@ -18,7 +18,7 @@ func pathLength(pe spath.PathElements, use []bool) int {
 		if use[i] {
 			pe_len = len(pe[i].ShortElement)
 		}
-		if (i > 0) {
+		if i > 0 {
 			// add the /
 			pe_len++
 		}
@@ -28,13 +28,17 @@ func pathLength(pe spath.PathElements, use []bool) int {
 }
 
 func main() {
-	helpFlag := getopt.BoolLong("help", 'h', "display help")
-	leadIn := getopt.StringLong("lead-in", 'i', "", "character sequence to begin abbreviated elements")
-	leadOut := getopt.StringLong("lead-out", 'o', "", "character sequence to end abbreviated elements")
+	helpFlag := getopt.BoolLong("help", '?', "display help")
+	shortLeadIn := getopt.StringLong("short-lead-in", 'i', "", "character sequence to begin abbreviated elements")
+	shortLeadOut := getopt.StringLong("short-lead-out", 'o', "", "character sequence to end abbreviated elements")
+	headLeadIn := getopt.StringLong("head-lead-in", 'h', "", "character sequence to begin the first element")
+	headLeadOut := getopt.StringLong("head-lead-out", 'H', "", "character sequence to end the first element")
+	tailLeadIn := getopt.StringLong("tail-lead-in", 't', "", "character sequence to begin the last element")
+	tailLeadOut := getopt.StringLong("tail-lead-out", 'T', "", "character sequence to end the last element")
 	length := getopt.IntLong("length", 'l', 1, "length of path above which shortening will be attempted")
-	minSavings := getopt.IntLong("minimum-element-savings", 'm', 1, "don't abbreviate a path element " +
-								 "unless doing so will result in at least this many charcaters saved; " +
-								 "use to compensate for printable lead-in or lead-out strings, if any")
+	minSavings := getopt.IntLong("minimum-element-savings", 'm', 1, "don't abbreviate a path element "+
+		"unless doing so will result in at least this many charcaters saved; "+
+		"use to compensate for printable lead-in or lead-out strings, if any")
 	getopt.Parse()
 
 	if *helpFlag {
@@ -50,14 +54,20 @@ func main() {
 	short := spath.Shorten(spath.Homealize(spath.Components(path.Clean(pth))))
 	use := make([]bool, len(short))
 	for i := 1; i < len(short)-1; i++ {
-		if pathLength(short, use) > *length && short[i].Shortened && len(short[i].OrigElement) - len(short[i].ShortElement) >= *minSavings {
+		if pathLength(short, use) > *length && short[i].Shortened && len(short[i].OrigElement)-len(short[i].ShortElement) >= *minSavings {
 			use[i] = true
 		}
 	}
 
 	formatter := func(i int, pe *spath.PathElement) string {
+		if i == 0 {
+			return *headLeadIn + pe.OrigElement + *headLeadOut
+		}
+		if i == len(short)-1 {
+			return *tailLeadIn + pe.OrigElement + *tailLeadOut
+		}
 		if use[i] {
-			return *leadIn + pe.ShortElement + *leadOut
+			return *shortLeadIn + pe.ShortElement + *shortLeadOut
 		}
 		return pe.OrigElement
 	}
