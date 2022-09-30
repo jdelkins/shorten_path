@@ -15,6 +15,10 @@ large. The tradeoff is fine for me.
 
     go install github.com/jdelkins/shorten_path@latest
 
+No need to use the Makefile, it is just for creating binary artifacts for
+various platforms in the releases. This tiny project isn't worth setting up CI
+or whatnot.
+
 ## Usage
 
 ```
@@ -40,19 +44,38 @@ Usage: shorten_path [-?] [-h value] [-H value] [-i value] [-l value] [-m value] 
              character sequence to end the last element
 ```
 
-The "lead-in" and "lead-out" options are the main distinct features of this tool, otherwise it might
-as well be implemented a shell function. They can be any string or binary data. See some examples
-below.
+The "lead-in" and "lead-out" options are the main distinct features of this
+tool, otherwise it might as well be implemented a shell function. They can be
+any string or binary data. See some examples in the section below.
 
-The `--length` option will forego any shortening (simply outputting the command line argument)
-unless the unshortened path is longer than this integer.
+The first and last elements are never shortened by this tool under any
+circumstances, although their output may be modified by the optional `-h`,
+`-H`, `-t`, and `-T` options. These work just like `-i` and `-o` but are
+applied respectively to the first and last path elements, in case you want
+their formatting to be distinct.
 
-The `--minimum-element-savings` option won't shorten a path element unless the shortened path
-element (excluding any lead-in or lead-out strings) is shorter than the unshortened path element by
-at least this number of characters. This option is handy when the lead-in and -out include printable
-text. This utility doesn't know or care whether the lead-in and -out will be printable, or rather
-some zero-width formatting code, and we don't care. We just assume they are zero width, unless you,
-the caller, dictates a different economic with this option.
+The `--length` option will forego any shortening (simply outputting the command
+line argument) unless the unshortened path is longer than this integer.
+
+The `--minimum-element-savings` option won't shorten a path element unless the
+shortened path element (excluding any lead-in or lead-out strings) is shorter
+than the unshortened path element by at least this number of characters. This
+option is handy when the lead-in and -out include printable text. This utility
+doesn't know or care whether the lead-in and -out will be printable, or rather
+some zero-width formatting code, and we don't care. We just assume they are
+zero width, unless you, the caller, dictates a different economic with this
+option.
+
+Subject to the above, each path element is shortened, at the suffix end, to the
+fewest number of characters so as to remain uniquely identifiable by inspection
+in the filesystem. It is hoped that, with the aid, for example, of
+tab-completion, that you could navigate to the same place using `cd` on a Unix
+shell, provided only with the visual output of this tool.
+
+The tool should work fine with "fake" or non-existent paths, although the
+uniqueness test is meaningless (every non-existent path is unique relative to
+all of the existing paths) and all of the non-existent elements
+will be shortened the minimum length.
 
 ## Examples
 
@@ -60,17 +83,28 @@ the caller, dictates a different economic with this option.
 
     $ pwd
     /sys/devices/system/cpu/cpu0
-    $ shorten_path -i '[' -o ']' -m 2 `pwd`
+    $ shorten_path -i '[' -o ']' -m 3 `pwd`
     /sys/[devi]/[sy]/cpu/cpu0
 
-Here, we are using square brackets as lead-in and -out characters. We tell shorten_path not to
-shorten unless the shortened version is at least 2 characters
-($2 = \textrm{len}('[') + \textrm{len}(']')$). This kicks in on the `cpu` directory in the
-example.
+Here, we are using square brackets as lead-in and -out characters. We tell
+`shorten_path` not to shorten unless the shortened version is at least
+3 characters shorter. This kicks in on the `cpu` directory in the example
+(`"[c]"` is the same length as `"cpu"`, so don't bother. See?). 
+
+### Using elipsis
+
+    $ pwd
+    /sys/devices/system/cpu/cpu0
+    $ shorten_path -o '…' -m 2 `pwd`
+    /sys/devi…/sy…/cpu/cpu0
+
+Same thing as above, but using elipsis characters. Note again that, with `-m
+2`, we don't bother shortening the `cpu`
 
 ### [powerlevel10k][] path component
 
-Put the following function into `.zshrc`, and change `dir` to `shortdir` in your `.p10k.zsh` file.
+Put the following function into `.zshrc`, and change `dir` to `shortdir` in
+your `.p10k.zsh` file.
 
 `~/.zshrc`
 ```
